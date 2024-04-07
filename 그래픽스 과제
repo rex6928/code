@@ -1,0 +1,111 @@
+// 열과 행의 수를 나타내는 변수 선언
+let cols, rows;
+// 스케일 변수 선언
+let scl = 20;
+// 전체 너비 변수 선언
+let w = 1500;
+// 전체 높이 변수 선언
+let h = 1500;
+
+// 노이즈를 조절할 변수 선언
+let flying = 0;
+
+// 지형 데이터를 저장할 배열 선언
+let terrain = [];
+
+function setup() {
+  // 웹지엘 캔버스 생성
+  createCanvas(600, 600, WEBGL);
+  // 열 수 계산
+  cols = w / scl;
+  // 행 수 계산
+  rows = h / scl;
+
+  // 지형 배열 초기화
+  for (let x = 0; x < cols; x++) {
+    terrain[x] = [];
+    for (let y = 0; y < rows; y++) {
+      terrain[x][y] = 0; // 일단 모든 값을 0으로 초기화
+    }
+  }
+
+  // 선 없음
+  noStroke();
+}
+
+// 비행기를 그리는 함수
+function drawAirplane() {
+  // 몸통 (박스로 그리기)
+  fill(100, 100, 100); // 회색
+  box(50, 150, 50); // 몸통
+
+  // 날개 (박스로 그리기)
+  fill(0, 0, 0); // 검정색
+  push(); // 변환 행렬 저장
+  rotateY(HALF_PI); // Y축을 기준으로 90도 회전하여 좌측으로 틀기
+  translate(0, -25, 0); // 몸통에서 위로 이동
+  box(40, 5, 200); // 날개
+  pop(); // 변환 행렬 복원
+
+  // 꼬리 (박스로 그리기)
+  fill(255, 0, 0); // 빨간색
+  push(); // 변환 행렬 저장
+  translate(0, 75, 0); // 몸통에서 위쪽으로 이동
+  box(20, 50, 20); // 꼬리
+  pop(); // 변환 행렬 복원
+}
+
+function draw() {
+  // flying 변수를 이용하여 노이즈를 조절
+  flying -= 0.1;
+  let yoff = flying;
+
+  // 각 지형 지점에 노이즈 값을 매핑하여 지형 생성
+  for (let y = 0; y < rows; y++) {
+    let xoff = 0;
+    for (let x = 0; x < cols; x++) {
+      terrain[x][y] = map(noise(xoff, yoff), 0, 1, -100, 100); // 노이즈 값을 -100에서 100 사이로 매핑하여 지형 생성
+      xoff += 0.2;
+    }
+    yoff += 0.2;
+  }
+
+  // 배경색 설정 (하늘색)
+  background(0, 130, 250);
+  // x축 기준으로 회전
+  rotateX(PI / 3);
+  // 지형의 색상 설정 (회색, 투명도 196)
+  fill(164, 164, 164, 196);
+  // 원점을 좌측 상단으로 이동
+  translate(-w / 2, -h / 2);
+
+  // 지형 그리기
+  for (let y = 0; y < rows - 1; y++) {
+    beginShape(TRIANGLE_STRIP); // 삼각형 스트립으로 그리기 시작
+    for (let x = 0; x < cols; x++) {
+      let v = terrain[x][y]; // 현재 좌표의 높이 값
+      // 색상 설정 (높이에 따라 변하는 녹색 및 투명도 조절)
+      fill(0, v + 128, 0, v + 150);
+      // 정점 추가
+      vertex(x * scl, y * scl, terrain[x][y]);
+      // 다음 행의 정점 추가
+      vertex(x * scl, (y + 1) * scl, terrain[x][y + 1]);
+    }
+    endShape(); // 도형 그리기 종료
+  }
+
+  // 변환 행렬을 스택에 저장
+  push();
+  // 원점을 캔버스의 중앙으로 이동
+  translate(w / 2, h / 2);
+  // 마우스 위치에 따라 이동
+  translate(mouseX - width / 2, (mouseY - height / 2) * 2);
+  // 하늘색 조명
+  ambientLight(0, 0, 150);
+  // 광택 재질 설정
+  specularMaterial(250);
+  // 비행기 그리기 함수 호출
+  drawAirplane();
+  // 스택에서 변환 행렬 복원
+  pop();
+}
