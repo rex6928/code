@@ -12,7 +12,7 @@ snake 게임의 변형
   + 게임 배경 수정
 * * *
 <시작 화면>     
-![Alt text](https://github.com/rex6928/code/blob/main/menu.PNG)
+![Alt text](https://github.com/rex6928/code/blob/main/menu.PNG)   
 <난이도 설정 화면>   
 ![Alt text](https://github.com/rex6928/code/blob/main/difficult%20menu.PNG)   
 
